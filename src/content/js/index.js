@@ -8,7 +8,7 @@ var App = {
         searchCache: {},
         debouncer: {},
         lastFilterRun: 0,
-        iframe: function() {
+        iframe: function () {
             // check if we're in an iframe
             try {
                 return window.self !== window.top;
@@ -282,7 +282,7 @@ App.init = function (settings, doc) {
         if (settings.dialog.limit) {
             App.autocomplete.dialog.RESULTS_LIMIT = settings.dialog.limit;
         }
-        Mousetrap.bindGlobal(settings.dialog.shortcut, function(e) {
+        Mousetrap.bindGlobal(settings.dialog.shortcut, function (e) {
             e.preventDefault();
             e.stopPropagation();
             App.autocomplete.dialog.completion();
@@ -343,12 +343,16 @@ $(function () {
 
     //console.log("Loaded Gorgias in", window.location.href);
 
+    if (document.contentType !== 'text/html') {
+        return; // don't load gorgias in non html pages (json, xml, etc..)
+    }
+
     // load templates
     App.templates.load();
 
     // initialize the app when the templates are done loading
-    window.addEventListener('message', function(res) {
-        if(res.data && res.data.action === 'g-templates-loaded') {
+    window.addEventListener('message', function (res) {
+        if (res.data && res.data.action === 'g-templates-loaded') {
             App.settings.fetchSettings(App.init, window.document);
         }
     });
@@ -358,9 +362,8 @@ $(function () {
         var fa = document.createElement('style');
         fa.type = 'text/css';
         fa.textContent = '@font-face { font-family: FontAwesome; src: url("' +
-        chrome.extension.getURL('background/fonts/fontawesome-webfont.woff?v=4.0.3') +
-        '"); }';
+            chrome.extension.getURL('background/fonts/fontawesome-webfont.woff?v=4.0.3') +
+            '"); }';
         document.head.appendChild(fa);
     }
-
 });
