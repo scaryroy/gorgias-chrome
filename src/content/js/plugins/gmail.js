@@ -2,6 +2,8 @@
  */
 
 App.plugin('gmail', (function() {
+    var qaHideClass = 'gorgias-hide-qa-btn';
+    var qaBtn;
 
     var isContentEditable = function(element) {
         return element && element.hasAttribute('contenteditable');
@@ -131,14 +133,58 @@ App.plugin('gmail', (function() {
         });
     };
 
-    var init = function(params, callback) {
+    var setBtnPosition = function(dimensions) {
+        var textfield = document.elementFromPoint(dimensions.left, dimensions.top);
 
+        // hide the button when it gets hidden on scroll,
+        // or is overlapped
+        if(textfield !== document.activeElement && !document.activeElement.contains(textfield) && !document.activeElement.classList.contains('qt-dropdown-search')) {
+            document.body.classList.add(qaHideClass);
+        } else {
+            document.body.classList.remove(qaHideClass);
+
+            var gmailHook = $(textfield).closest('td').get(0);
+
+            if (gmailHook) {
+                // clone a qabtn and move it next to the textfield in the dom.
+                // we can't use the same qaBtn because it will get removed
+                // when closing the compose window.
+                var btnInstance = gmailHook.querySelector('.gorgias-qa-btn');
+
+                // remove previous instances created for other editors
+                if(!btnInstance) {
+                    var btnPrevInstance = document.querySelector('.gorgias-qa-btn-clone');
+                    if(btnPrevInstance) {
+                        btnPrevInstance.parentNode.removeChild(btnPrevInstance);
+                    }
+
+                    btnInstance = qaBtn.cloneNode(true);
+                    btnInstance.classList.add('gorgias-qa-btn-clone');
+                    gmailHook.appendChild(btnInstance);
+                }
+
+                btnInstance.style.top = '0';
+                btnInstance.style.right = '0';
+                btnInstance.style.left = 'auto';
+            }
+        }
+
+        return {
+            top: 0,
+            left: 0
+        }
+    };
+
+    var init = function(params, callback) {
         var gmailUrl = '//mail.google.com/';
 
         var activateExtension = false;
 
         // trigger the extension based on url
         if(window.location.href.indexOf(gmailUrl) !== -1) {
+            qaBtn = document.querySelector('.gorgias-qa-btn');
+            qaBtn.style.left = '-100px';
+
             activateExtension = true;
         }
 
@@ -148,13 +194,13 @@ App.plugin('gmail', (function() {
             // second is the response
             callback(null, activateExtension);
         }
-
     };
 
     return {
         init: init,
         getData: getData,
-        setTitle: setTitle
+        setTitle: setTitle,
+        setBtnPosition: setBtnPosition
     }
 
 })());

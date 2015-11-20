@@ -8,13 +8,14 @@ App.qaBtn = (function() {
 
     var qaPositionInterval;
     var $qaBtn;
+    var qaBtn;
     var $qaTooltip;
     var showQaTooltip;
     var tooltip;
     var currentWindow = window;
     var settings;
-    var dimensionChangeTimer;
 
+    var qaClass = 'gorgias-qa-btn';
     var qaShowClass = 'gorgias-show-qa-btn';
     var qaHideClass = 'gorgias-hide-qa-btn';
     var qaDropdownShowClass = 'qa-btn-dropdown-show';
@@ -68,17 +69,6 @@ App.qaBtn = (function() {
             textfield: dimensions
         }, '*');
 
-        // check if the textfield dimensions or position changes.
-        // clear if we have an existing interval,
-        // eg. when we trigger a manual focus.
-        if(dimensionChangeTimer) {
-            clearInterval(dimensionChangeTimer);
-        }
-
-        dimensionChangeTimer = setInterval(function() {
-            checkDimensionChange(textfield, dimensions);
-        }, 1000);
-
         // First time a user uses our extension
         // we open the dialog automatically
         // (as if the button was clicked).
@@ -122,31 +112,17 @@ App.qaBtn = (function() {
         }, 50);
     };
 
-    var checkDimensionChange = function(textfield, dimensions) {
-        var currentRect = textfield.getBoundingClientRect();
-        var key;
-
-        for(key in dimensions) {
-            if(currentRect[key] !== dimensions[key]) {
-                // trigger a new position and interval
-                var focus = new Event('focus');
-                textfield.dispatchEvent(focus);
-                return;
-            }
-        }
-    };
-
     var focusout = function(e) {
         window.top.postMessage({
             action: 'g-qabtn-hide'
         }, '*');
-
-        if(dimensionChangeTimer) {
-            clearInterval(dimensionChangeTimer);
-        }
     };
 
-    var click = function() {
+    var click = function(e) {
+        if(!e.target.classList.contains(qaClass)) {
+            return;
+        }
+
         currentWindow.postMessage({
             action: 'g-dialog-completion',
             source: 'button'
@@ -160,7 +136,6 @@ App.qaBtn = (function() {
     };
 
     var setPosition = function (textfield) {
-        var qaBtn = $qaBtn.get(0);
         if(!qaBtn) {
             return;
         }
@@ -243,7 +218,7 @@ App.qaBtn = (function() {
     };
 
     var hide = function() {
-        if(document.activeElement.classList.contains('gorgias-qa-btn')) {
+        if(document.activeElement.classList.contains(qaClass)) {
             return;
         }
 
@@ -264,7 +239,10 @@ App.qaBtn = (function() {
         document.body.classList.remove(qaDropdownShowClass);
     };
 
-    var showTooltip = function() {
+    var showTooltip = function(e) {
+        if(!e.target.classList.contains(qaClass)) {
+            return;
+        }
 
         if (showQaTooltip) {
             clearTimeout(showQaTooltip);
@@ -294,7 +272,11 @@ App.qaBtn = (function() {
 
     };
 
-    var hideTooltip = function () {
+    var hideTooltip = function (e) {
+        if(!e.target.classList.contains(qaClass)) {
+            return;
+        }
+
         clearTimeout(showQaTooltip);
         $qaTooltip.hide();
     };
@@ -334,14 +316,15 @@ App.qaBtn = (function() {
 
         // add the dialog quick access icon
         $qaBtn = $(g.autocomplete.dialog.qaBtnTemplate);
+        qaBtn = $qaBtn.get(0);
         $qaTooltip = $(g.autocomplete.dialog.qaBtnTooltip);
-
-        $qaBtn.on('click', click);
-        $qaBtn.on('mouseenter', showTooltip);
-        $qaBtn.on('mouseleave', hideTooltip);
 
         $container.append($qaBtn);
         $container.append($qaTooltip);
+
+        document.body.addEventListener('click', click);
+        document.body.addEventListener('mouseover', showTooltip, true);
+        document.body.addEventListener('mouseout', hideTooltip, true);
 
         tooltip = {
             height: parseInt($qaTooltip.css('height'), 10),
