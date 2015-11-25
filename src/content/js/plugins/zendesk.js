@@ -17,7 +17,7 @@ App.plugin('zendesk', (function () {
                     'domain': window.location.hostname
                 }
             }, function(enabled){
-                callback(null, enabled);
+                callback(null, true);
 
                 if (enabled) {
                     injectScript();
@@ -255,7 +255,6 @@ App.plugin('zendesk', (function () {
                     bcc: [],
                     subject: workspace.find('input[name=subject]').val()
                 };
-
                 if(callback) {
                     return callback(null, vars);
                 }

@@ -1,11 +1,11 @@
 /* Gmail plugin
  */
 
-App.plugin('gmail', (function() {
+App.plugin('gmail', (function () {
     var qaHideClass = 'gorgias-hide-qa-btn';
     var qaBtn;
 
-    var isContentEditable = function(element) {
+    var isContentEditable = function (element) {
         return element && element.hasAttribute('contenteditable');
     };
 
@@ -48,7 +48,7 @@ App.plugin('gmail', (function() {
     };
 
     // get all required data from the dom
-    var getData = function(params, callback) {
+    var getData = function (params, callback) {
 
         var from = [],
             to = [],
@@ -112,14 +112,14 @@ App.plugin('gmail', (function() {
             bcc: parseList(bcc),
             subject: subject
         };
-        if(callback) {
+        if (callback) {
             callback(null, vars);
         }
 
     };
 
-    var setTitle = function(params, callback) {
-        getData(params, function(_, vars){
+    var setTitle = function (params, callback) {
+        getData(params, function (_, vars) {
             var parsedSubject = Handlebars.compile(params.quicktext.subject)(PrepareVars(vars));
 
             var $subjectField = $(params.element).closest('table.aoP').find('input[name=subjectbox]');
@@ -127,18 +127,18 @@ App.plugin('gmail', (function() {
 
             var response = {};
 
-            if(callback) {
+            if (callback) {
                 callback(null, response);
             }
         });
     };
 
-    var setBtnPosition = function(dimensions) {
+    var setBtnPosition = function (dimensions) {
         var textfield = document.elementFromPoint(dimensions.left, dimensions.top);
 
         // hide the button when it gets hidden on scroll,
         // or is overlapped
-        if(textfield !== document.activeElement && !document.activeElement.contains(textfield) && !document.activeElement.classList.contains('qt-dropdown-search')) {
+        if (textfield !== document.activeElement && !document.activeElement.contains(textfield) && !document.activeElement.classList.contains('qt-dropdown-search')) {
             document.body.classList.add(qaHideClass);
         } else {
             document.body.classList.remove(qaHideClass);
@@ -152,9 +152,9 @@ App.plugin('gmail', (function() {
                 var btnInstance = gmailHook.querySelector('.gorgias-qa-btn');
 
                 // remove previous instances created for other editors
-                if(!btnInstance) {
+                if (!btnInstance) {
                     var btnPrevInstance = document.querySelector('.gorgias-qa-btn-clone');
-                    if(btnPrevInstance) {
+                    if (btnPrevInstance) {
                         btnPrevInstance.parentNode.removeChild(btnPrevInstance);
                     }
 
@@ -175,21 +175,22 @@ App.plugin('gmail', (function() {
         }
     };
 
-    var init = function(params, callback) {
+    var init = function (params, callback) {
         var gmailUrl = '//mail.google.com/';
 
         var activateExtension = false;
 
         // trigger the extension based on url
-        if(window.location.href.indexOf(gmailUrl) !== -1) {
+        if (window.location.href.indexOf(gmailUrl) !== -1) {
             qaBtn = document.querySelector('.gorgias-qa-btn');
-            qaBtn.style.left = '-100px';
-
+            if (qaBtn) {
+                qaBtn.style.left = '-100px';
+            }
             activateExtension = true;
         }
 
         // return true as response if plugin should be activated
-        if(callback) {
+        if (callback) {
             // first param is the error
             // second is the response
             callback(null, activateExtension);
