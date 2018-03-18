@@ -1,12 +1,32 @@
-<div class="alert alert-dismissable helpdesk-ad text-center">
-    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-        <span aria-hidden="true">&times;</span>
-    </button>
-    <img src="/icons/channels.png" alt="Helpdesk channels"/>
-    <h4>Are you a Shopify merchant?</h4>
-    <p>Try our helpdesk built for Shopify, and manage all your customer support in a single app &#128640;</p>
-    <a class="" target="_blank"
-       href="https://gorgias.io/?utm_source=ext&utm_medium=banner_shopify&utm_campaign=ext">
-        <span><u>Get started for free</u></span>
-    </a>
+<div class="alert alert-dismissable helpdesk-ad text-center" style="width: 100%">
+	<img src="https://www.mytuition.nz/assets/images/mytuition-logo.svg">
+
+	<br><br>
+
+	Username:<br>
+	<input type="input" ng-model="username">
+
+	<br><br>
+
+	Password:<br>
+	<input type="password" ng-model="password">
+
+	<br><br>
+
+	<b>Personal:</b><br>
+
+	<button ng-click="mtPull(username, password, true)">Pull</button>
+	<button ng-click="mtPush(username, password, true)">Push</button>
+
+	<br><br>
+
+	<b>MyTuition Standard:</b><br>
+
+	Template names starting with "MyTuition " (case insensitive) will be recognised as
+	standard MyTuition templates for everyone to use.<br>
+
+	<b>USE WITH CAUTION</b><br>
+	<button ng-click="mtPull(username, password, false)">Pull</button>
+	<button ng-click="mtPush(username, password, false)">Push</button>
+
 </div>

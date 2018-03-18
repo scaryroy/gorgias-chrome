@@ -353,4 +353,62 @@ gApp.run(function ($rootScope, $location, $http, $timeout, ProfileService, Setti
     $rootScope.$on('$viewContentLoaded', initDom);
     $rootScope.$on('$includeContentLoaded', initDom);
 
+
+
+    $rootScope.mtApiBase = "https://www.mytuition.nz/api/";
+
+    $rootScope.getJwt = function (username, password, callback) {
+			var parameter = JSON.stringify({username: username, password: password});
+			$http.post($rootScope.mtApiBase + "login", parameter)
+				.success(function(data, status, headers, config) {
+					var token = headers()['authorization'];
+					if (!token) token = "";
+					token = token.replace("Bearer ", "");
+					callback(token);
+				})
+				.error(function(data, status, headers, config) {
+					alert("Login failed - Invalid username or password?");
+				});
+		};
+
+		$rootScope.mtPull = function (username, password, isPersonal) {
+			$rootScope.getJwt(username, password, function(token) {
+				$http({
+					method: 'GET',
+					url: $rootScope.mtApiBase + "admin/temporary-storage/templates",
+					headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token}
+				})
+					.success(function(data, status, headers, config) {
+						TemplateStorage.clear(function () {
+							TemplateStorage.set(JSON.parse(data.value), function () {
+								alert("Pulled!");
+								$rootScope.$broadcast("templates-sync");
+							});
+						});
+					})
+					.error(function(data, status, headers, config) {
+						alert("Pull failed.");
+					});
+			});
+		};
+
+		$rootScope.mtPush = function (username, password, isPersonal) {
+			$rootScope.getJwt(username, password, function(token) {
+				TemplateStorage.get(null, function (data) {
+					$http({
+						method: 'POST',
+						url: $rootScope.mtApiBase + "admin/temporary-storage/templates",
+						headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token},
+						data: {value: JSON.stringify(data)}
+					})
+						.success(function(data, status, headers, config) {
+							alert("PUSHED!");
+						})
+						.error(function(data, status, headers, config) {
+							alert("Push failed.");
+						});
+				});
+			});
+		};
+
 });
