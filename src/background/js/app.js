@@ -371,44 +371,106 @@ gApp.run(function ($rootScope, $location, $http, $timeout, ProfileService, Setti
 				});
 		};
 
-		$rootScope.mtPull = function (username, password, isPersonal) {
-			$rootScope.getJwt(username, password, function(token) {
-				$http({
-					method: 'GET',
-					url: $rootScope.mtApiBase + "admin/temporary-storage/templates",
-					headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token}
-				})
-					.success(function(data, status, headers, config) {
-						TemplateStorage.clear(function () {
-							TemplateStorage.set(JSON.parse(data.value), function () {
-								alert("Pulled!");
-								$rootScope.$broadcast("templates-sync");
-							});
-						});
-					})
-					.error(function(data, status, headers, config) {
-						alert("Pull failed.");
-					});
-			});
-		};
+	$rootScope.mtDownload = function (username, password, isPersonal) {
 
-		$rootScope.mtPush = function (username, password, isPersonal) {
-			$rootScope.getJwt(username, password, function(token) {
-				TemplateStorage.get(null, function (data) {
-					$http({
-						method: 'POST',
-						url: $rootScope.mtApiBase + "admin/temporary-storage/templates",
-						headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token},
-						data: {value: JSON.stringify(data)}
-					})
-						.success(function(data, status, headers, config) {
-							alert("PUSHED!");
-						})
-						.error(function(data, status, headers, config) {
-							alert("Push failed.");
+		if (isPersonal) {
+			if (!confirm("Confirm delete all personal templates and load from server?")) return null;
+		} else {
+			if (!confirm("Confirm delete all MyTuition templates and load from server?")) return null;
+		}
+
+		var isGlobal = !isPersonal;
+		var storageKey = "gorgias_templates_global";
+		if (isPersonal) storageKey = "gorgias_templates_" + username;
+
+		$rootScope.getJwt(username, password, function(token) {
+			$http({
+				method: 'GET',
+				url: $rootScope.mtApiBase + "admin/temporary-storage/" + storageKey,
+				headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token}
+			}).success(function(serverData) {
+				var serverTemplates = serverData.value;
+				if (serverTemplates) {
+					serverTemplates = JSON.parse(serverTemplates);
+				} else {
+					serverTemplates = {};
+				}
+
+				console.log("hi");
+
+				TemplateStorage.get(null, function(localTemplates) {
+
+					console.log("hi2");
+
+					var resultingTemplates = $rootScope.mixTemplates(
+						$rootScope.filterTemplates(localTemplates, isGlobal), serverTemplates
+					);
+
+					console.dir(serverTemplates);
+					console.dir(localTemplates);
+					console.dir(resultingTemplates);
+
+					TemplateStorage.clear(function () {
+						TemplateStorage.set(resultingTemplates, function () {
+							$rootScope.$broadcast("templates-sync");
+							alert("Downloaded!");
 						});
+					});
+				});
+			}).error(function() { alert("Upload failed."); });
+		});
+	};
+
+	$rootScope.mtUpload = function (username, password, isPersonal) {
+
+		if (isPersonal) {
+			if (!confirm("Confirm delete all personal on server and override with local templates?")) return null;
+		} else {
+			if (!confirm("Confirm delete all MyTuition on server and override with local templates?")) return null;
+		}
+
+		var storageKey = "gorgias_templates_global";
+		if (isPersonal) storageKey = "gorgias_templates_" + username;
+
+		$rootScope.getJwt(username, password, function(token) {
+			TemplateStorage.get(null, function (templates) {
+				var templatesToUpload = $rootScope.filterTemplates(templates, isPersonal);
+
+				$http({
+					method: 'POST',
+					url: $rootScope.mtApiBase + "admin/temporary-storage/" + storageKey,
+					headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token},
+					data: {value: JSON.stringify(templatesToUpload)}
+				}).success(function() {
+					alert("Uploaded!");
+				}).error(function() {
+					alert("Upload failed.");
 				});
 			});
-		};
+		});
+	};
+
+	$rootScope.filterTemplates = function (templates, isPersonal) {
+
+		var isGlobal = !isPersonal;
+
+		var result = {};
+		Object.keys(templates).forEach(function(key) {
+			var template = templates[key];
+			var title = template['title'];
+			if (!title) return null;
+			if (template['title'].toLowerCase().startsWith('mytuition ') === isGlobal) {
+				result[key] = template;
+			}
+		});
+		return result;
+	};
+
+	$rootScope.mixTemplates = function (left, right) {
+		var result = {};
+		Object.keys(left).forEach(function(key) { result[key] = left[key]; });
+		Object.keys(right).forEach(function(key) { result[key] = right[key]; });
+		return result;
+	};
 
 });
