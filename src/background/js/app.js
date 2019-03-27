@@ -424,9 +424,23 @@ gApp.run(function ($rootScope, $location, $http, $timeout, ProfileService, Setti
 	$rootScope.mtUpload = function (username, password, isPersonal) {
 
 		if (isPersonal) {
-			if (!confirm("Confirm delete all personal on server and override with local templates?")) return null;
+			if (!confirm(
+			    "Your personal data will be uploaded onto MyTuition servers. \n" +
+                "They will be used in accordance with our privacy policy " +
+                "and will not be shared with any third party. " +
+                "If you press cancel, your data will not be uploaded. \n\n" +
+                
+                "Confirm delete all personal on server and override with local templates?"
+            )) return null;
 		} else {
-			if (!confirm("Confirm delete all MyTuition on server and override with local templates?")) return null;
+			if (!confirm(
+                "Your personal data will be uploaded onto MyTuition servers. \n" +
+                "They will be used in accordance with our privacy policy " +
+                "and will not be shared with any third party. " +
+                "If you press cancel, your data will not be uploaded. \n\n" +
+
+			    "Confirm delete all MyTuition on server and override with local templates?"
+            )) return null;
 		}
 
 		var storageKey = "gorgias_templates_global";
