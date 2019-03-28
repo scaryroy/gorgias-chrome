@@ -1,7 +1,7 @@
 {
     "manifest_version": 2,
     "name": "MyTuition Gorgias",
-    "version": "5.8.8",
+    "version": "5.9.0",
     "description": "Gorgias Tempaltes that save to MyTuition Server",
     "short_name": "MT Gorgias",
     "default_locale": "en",
